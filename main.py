@@ -1,19 +1,18 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
-import time 
+import time
+
+options = webdriver.FirefoxOptions()
+options.add_argument("--enable-javascript")
+options.add_argument("--enable-cookies")
+browser = webdriver.Firefox(options=options)
 
 for i in range(1, 101):
     url = "https://etherscan.io/accounts/" + str(i) + "?ps=100"
     print(url)
 
-    options = webdriver.ChromeOptions()
-    options.add_argument("--enable-javascript")
-    options.add_argument("--enable-cookies")
-
-    browser = webdriver.Chrome(chrome_options=options)
     browser.get(url)
-
-    time.sleep(3) 
+    time.sleep(3)
 
     html_source = browser.page_source
     html_soup: BeautifulSoup = BeautifulSoup(html_source, 'html.parser')
@@ -27,4 +26,3 @@ for i in range(1, 101):
                     file.write(t + "\n")
 
     time.sleep(3)
-
