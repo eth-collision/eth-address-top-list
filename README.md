@@ -8,3 +8,5 @@ Ethereum address balance top 10,000
 pip install -r requirements.txt
 python main.py
 ```
+
+Then you can check data in [address.txt](https://github.com/smallyunet/eth-address-top-list/blob/main/address.txt).
