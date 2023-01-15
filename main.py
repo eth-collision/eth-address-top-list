@@ -5,6 +5,7 @@ import time
 options = webdriver.FirefoxOptions()
 options.add_argument("--enable-javascript")
 options.add_argument("--enable-cookies")
+# options.add_argument("--headless")
 browser = webdriver.Firefox(options=options)
 
 for i in range(1, 101):
@@ -12,6 +13,7 @@ for i in range(1, 101):
     print(url)
 
     browser.get(url)
+    # skip couldflare
     time.sleep(3)
 
     html_source = browser.page_source
@@ -25,4 +27,3 @@ for i in range(1, 101):
                 with open("address.txt", "a") as file:
                     file.write(t + "\n")
 
-    time.sleep(3)
