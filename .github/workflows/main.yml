@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron:  '0 0 * * 0'
+
+  workflow_dispatch:
+
+jobs:
+  all:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4.2.0
+        with:
+          python-version: 3.10.4 
+        
+      - name: Setup Firefox
+        uses: browser-actions/setup-firefox@latest
+
+      - name: Install pip package
+        run: pip install -r requirements.txt 
+        
+      - name: Run the main script
+        run: python main.py
+   
+      - name: Git add files
+        run: git add -A
+        
+      - name: Github commit and push
+        uses: Smart-Transportation/push@v1.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}  
+          repository: eth-collision/eth-address-top-list
+          branch: main
