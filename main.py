@@ -5,7 +5,7 @@ import time
 options = webdriver.FirefoxOptions()
 options.add_argument("--enable-javascript")
 options.add_argument("--enable-cookies")
-# options.add_argument("--headless")
+options.add_argument("--headless")
 browser = webdriver.Firefox(options=options)
 
 for i in range(1, 101):
