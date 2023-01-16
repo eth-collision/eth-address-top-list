@@ -13,7 +13,7 @@ for i in range(1, 101):
     print(url)
 
     browser.get(url)
-    # skip couldflare
+    # skip couldflare 
     time.sleep(3)
 
     html_source = browser.page_source
