@@ -8,7 +8,7 @@ options.add_argument("--enable-cookies")
 options.add_argument("--headless") 
 browser = webdriver.Firefox(options=options)
 
-for i in range(1, 101):
+for i in range(1, 2):
     url = "https://etherscan.io/accounts/" + str(i) + "?ps=100"
     print(url)
 
