@@ -30,6 +30,9 @@ jobs:
         
       - name: Run the main script
         run: python main.py
+
+      - name: Run the clean script
+        run: python clean.py
    
       - name: Git add files
         run: git add -A
