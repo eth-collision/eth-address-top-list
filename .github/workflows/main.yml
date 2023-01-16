@@ -37,8 +37,11 @@ jobs:
       - name: Git add files
         run: git add -A
         
+      - name: Git add files
+        run: git commit -m "update address.txt by bot"
+        
       - name: Github commit and push
-        uses: github-actions-x/commit@v2.9
+        uses: ad-m/github-push-action@v0.6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}  
           branch: main
