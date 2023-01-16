@@ -38,8 +38,7 @@ jobs:
         run: git add -A
         
       - name: Github commit and push
-        uses: Smart-Transportation/push@v1.3
+        uses: github-actions-x/commit@v2.9
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}  
-          repository: eth-collision/eth-address-top-list
           branch: main
