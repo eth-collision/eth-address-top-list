@@ -1,18 +1,19 @@
 # Ethereum top-address snapshot
 
 A weekly, validated snapshot of the top 10,000 Ethereum accounts by ETH balance,
-as listed by [Etherscan](https://etherscan.io/accounts).
+as indexed by [Blockscout](https://eth.blockscout.com/).
 
 ## Data
 
 - [`address.txt`](./address.txt) contains one complete, lowercase Ethereum address per line.
-- [`snapshot.json`](./snapshot.json) records the source, generation time, row count, and SHA-256 digest.
-- The publisher fails closed if any page is incomplete, any address is malformed,
-  or the combined snapshot contains duplicates. A failed refresh never replaces the
-  last validated snapshot.
+- [`snapshot.json`](./snapshot.json) records the API source, generation time, row count, and SHA-256 digest.
+- The publisher fails closed if the API returns malformed addresses or balances
+  or broken pagination. It removes cross-page duplicates and locally sorts the
+  returned balance values before atomically replacing the previous snapshot.
 
-This is a point-in-time ranking from a third-party explorer. It is not an
-authoritative ledger dataset and should not be treated as financial advice.
+This is collected from a live, paginated third-party explorer index. Balances
+can change while pages are fetched, so it is not an atomic chain-state view or
+an authoritative ledger dataset and should not be treated as financial advice.
 
 ## Refresh locally
 
@@ -23,12 +24,8 @@ pip install -r requirements.txt
 python main.py
 ```
 
-The scheduled publisher uses `--transport selenium` because Etherscan rejects
-plain HTTP requests from GitHub-hosted runner IPs. Both transports use the same
-parser and fail-closed snapshot validation.
-
 The scheduled GitHub Actions job refreshes the snapshot every Sunday. Pull
-requests run parser tests without publishing data.
+requests run pagination and validation tests without publishing data.
 
 ## Validate
 
