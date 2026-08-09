@@ -40,9 +40,8 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      - uses: browser-actions/setup-firefox@v1
       - run: pip install -r requirements.txt
-      - run: python main.py --transport selenium
+      - run: python main.py
       - name: Commit a changed snapshot
         run: |
           git add address.txt snapshot.json
