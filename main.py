@@ -10,6 +10,7 @@ import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Callable
 from urllib.parse import urlparse
 
 import requests
@@ -70,15 +71,72 @@ def fetch_snapshot(
     page_size: int = 100,
     delay: float = 0.25,
     session: requests.Session | None = None,
+    transport: str = "http",
 ) -> list[str]:
+    if transport not in {"http", "selenium"}:
+        raise ValueError(f"unsupported transport: {transport}")
+
+    if transport == "selenium":
+        return fetch_snapshot_with_browser(pages, page_size, delay)
+
     client = session or build_session()
+    return collect_snapshot(
+        pages,
+        page_size,
+        delay,
+        lambda url: fetch_http(client, url),
+    )
+
+
+def fetch_http(session: requests.Session, url: str) -> str:
+    response = session.get(url, timeout=30)
+    response.raise_for_status()
+    return response.text
+
+
+def fetch_snapshot_with_browser(
+    pages: int,
+    page_size: int,
+    delay: float,
+) -> list[str]:
+    from selenium import webdriver
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support.ui import WebDriverWait
+
+    options = webdriver.FirefoxOptions()
+    options.add_argument("-headless")
+    browser = webdriver.Firefox(options=options)
+
+    def fetch_page(url: str) -> str:
+        browser.get(url)
+        WebDriverWait(browser, 30).until(
+            lambda driver: len(
+                driver.find_elements(
+                    By.CSS_SELECTOR,
+                    "table tbody tr a[href^='/address/']",
+                )
+            )
+            >= page_size
+        )
+        return browser.page_source
+
+    try:
+        return collect_snapshot(pages, page_size, delay, fetch_page)
+    finally:
+        browser.quit()
+
+
+def collect_snapshot(
+    pages: int,
+    page_size: int,
+    delay: float,
+    fetch_page: Callable[[str], str],
+) -> list[str]:
     addresses: list[str] = []
 
     for page in range(1, pages + 1):
         url = SOURCE_URL.format(page=page, page_size=page_size)
-        response = client.get(url, timeout=30)
-        response.raise_for_status()
-        page_addresses = extract_addresses(response.text)
+        page_addresses = extract_addresses(fetch_page(url))
 
         if len(page_addresses) != page_size:
             raise RuntimeError(
@@ -131,6 +189,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--pages", type=int, default=100)
     parser.add_argument("--page-size", type=int, default=100)
     parser.add_argument("--delay", type=float, default=0.25)
+    parser.add_argument(
+        "--transport",
+        choices=("http", "selenium"),
+        default="http",
+        help="page transport; GitHub Actions uses selenium because Etherscan blocks runner HTTP requests",
+    )
     parser.add_argument("--output", type=Path, default=Path("address.txt"))
     parser.add_argument("--metadata", type=Path, default=Path("snapshot.json"))
     return parser.parse_args()
@@ -138,7 +202,12 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    addresses = fetch_snapshot(args.pages, args.page_size, args.delay)
+    addresses = fetch_snapshot(
+        args.pages,
+        args.page_size,
+        args.delay,
+        transport=args.transport,
+    )
     write_snapshot(addresses, args.output, args.metadata)
     print(f"Published {len(addresses)} validated addresses to {args.output}")
 

@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from main import extract_addresses, write_snapshot
+from main import collect_snapshot, extract_addresses, write_snapshot
 
 
 class SnapshotTests(unittest.TestCase):
@@ -42,6 +42,15 @@ class SnapshotTests(unittest.TestCase):
             self.assertEqual(
                 details["sha256"], hashlib.sha256(content.encode("utf-8")).hexdigest()
             )
+
+    def test_collect_snapshot_rejects_incomplete_page(self):
+        html = """
+        <table><tbody><tr>
+          <td><a href='/address/0x0000000000000000000000000000000000000001'>one</a></td>
+        </tr></tbody></table>
+        """
+        with self.assertRaisesRegex(RuntimeError, "expected 2"):
+            collect_snapshot(1, 2, 0, lambda _url: html)
 
 
 if __name__ == "__main__":
