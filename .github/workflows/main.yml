@@ -1,44 +1,55 @@
-name: CI
+name: Validate and publish snapshot
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
   schedule:
-    - cron:  '0 0 * * 0'
-
+    - cron: "0 0 * * 0"
   workflow_dispatch:
 
+concurrency:
+  group: address-snapshot-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
 jobs:
-  all:
+  test:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Python
-        uses: actions/setup-python@v4.2.0
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: 3.10.4 
-        
-      - name: Setup Firefox
-        uses: browser-actions/setup-firefox@latest
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -v
 
-      - name: Install pip package
-        run: pip install -r requirements.txt 
-        
-      - name: Run the main script
-        run: python main.py
-
-      - name: Run the clean script
-        run: python clean.py
-   
-      - name: Git add files
-        run: git add -A
-               
-      - name: Github commit and push
-        uses: actions-js/push@v1.4
+  publish:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}  
-          branch: main
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python main.py
+      - name: Commit a changed snapshot
+        run: |
+          git add address.txt snapshot.json
+          if git diff --cached --quiet; then
+            echo "Snapshot is unchanged"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: publish validated address snapshot"
+          git push
