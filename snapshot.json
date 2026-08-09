@@ -1,6 +1,6 @@
 {
   "address_count": 10000,
-  "generated_at": "2026-08-09T07:42:10+00:00",
-  "sha256": "88196b2ebd3d0d78315c3cc51fc97b9b4000a8e448538c4f334cee11ca8ee640",
+  "generated_at": "2026-08-09T07:46:24+00:00",
+  "sha256": "e444f76c7a30905880cbc355c0f0d1705af4b3c18030028e67759973b2ef3521",
   "source": "https://eth.blockscout.com/api/v2/addresses"
 }
