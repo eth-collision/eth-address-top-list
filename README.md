@@ -23,6 +23,10 @@ pip install -r requirements.txt
 python main.py
 ```
 
+The scheduled publisher uses `--transport selenium` because Etherscan rejects
+plain HTTP requests from GitHub-hosted runner IPs. Both transports use the same
+parser and fail-closed snapshot validation.
+
 The scheduled GitHub Actions job refreshes the snapshot every Sunday. Pull
 requests run parser tests without publishing data.
 
