@@ -1,2 +1,2 @@
-beautifulsoup4==4.11.1
-selenium==4.7.2
+beautifulsoup4>=4.12,<5
+requests>=2.32,<3
